@@ -1,0 +1,22 @@
+---
+
+- name: Install HAProxy
+  apt: "name=haproxy state=installed"
+
+- name: Enable HAProxy init script
+  replace:
+    dest: '/etc/default/haproxy'
+    regexp: 'ENABLED=0'
+    replace: 'ENABLED=1'
+
+- name: Start HAProxy
+  service: "name=haproxy state=started enabled=yes"
+
+- name: Configure HAProxy
+  template:
+    src: "haproxy.cfg.j2"
+    dest: "/etc/haproxy/haproxy.cfg"
+    owner: haproxy
+    group: haproxy
+    mode: 0644
+  notify: restart haproxy

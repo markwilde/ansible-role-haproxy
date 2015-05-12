@@ -1,0 +1,76 @@
+global
+{% if haproxy.global.log.0.address is defined %}
+{% for log in haproxy.global.log %}
+  log {{ log.address }} {{ log.facility }}{% if log.level is defined %} {{log.level }}{% endif %}{% if log.minlevel is defined %} {{ log.minlevel }}{% endif %}
+
+{% endfor %}
+{% endif %}
+{% if haproxy.global.log is string %}
+  log {{ haproxy.global.log }}
+{% endif %}
+{% if haproxy.global.maxconn is defined %}
+  maxconn {{ haproxy.global.maxconn }}
+{% endif %}
+  user {{ haproxy.global.user }}
+  group {{ haproxy.global.group }}
+{% if haproxy.global.daemon is defined and haproxy.global.daemon == true %}
+  daemon
+{% endif %}
+
+defaults
+{% if haproxy.defaults.log.0.address is defined %}
+{% for log in haproxy.defaults.log %}
+  log {{ log.address }} {{ log.facility }}{% if log.level is defined %} {{log.level }}{% endif %}{% if log.minlevel is defined %} {{ log.minlevel }}{% endif %}
+
+{% endfor %}
+{% endif %}
+{% if haproxy.defaults.log is string %}
+  log {{ haproxy.defaults.log }}
+{% endif %}
+{% if haproxy.defaults.options is defined %}
+{% for option in haproxy.defaults.options %}
+  option {{ option }}
+{% endfor %}
+{% endif %}
+  retries {{ haproxy.defaults.retries }}
+  timeout connect {{ haproxy.defaults.timeouts.connect }}
+  timeout client {{ haproxy.defaults.timeouts.client }}
+  timeout server {{ haproxy.defaults.timeouts.server }}
+
+{% for proxy in haproxy.listen %}
+listen {{ proxy.name }}
+  bind {{ proxy.bind }}
+  mode {{ proxy.mode }}
+{% if proxy.stats is defined %}
+{% if proxy.stats.enable == true %}
+  stats enable
+{% endif -%}
+{% if proxy.stats.hide_version is defined and proxy.stats.hide_version == true %}
+  stats hide-version
+{% endif -%}
+{% if proxy.stats.uri is defined %}
+  stats uri {{ proxy.stats.uri }}
+{% endif -%}
+{% if proxy.stats.realm is defined %}
+  stats realm {{ proxy.stats.realm }}
+{% endif -%}
+{% for auth in proxy.stats.auth %}
+  stats auth {{ auth.user }}:{{ auth.pass }}
+{% endfor %}
+{% if proxy.stats.refresh is defined %}
+  stats refresh {{ proxy.stats.refresh }}
+{% endif -%}
+{% endif %}
+  balance {{ proxy.balance }}
+{% if proxy.options is defined %}
+{% for option in proxy.options %}
+  option {{ option }}
+{% endfor %}
+{% endif %}
+{% if proxy.servers is defined %}
+{% for server in proxy.servers %}
+  server {{ server.name }} {{ server.ip }}{% if server.port is defined %}:{{server.port }}{% endif %} {% if server.maxconn is defined %}maxconn {{server.maxconn }} {% endif %}{% if server.params is defined %}{% for param in server.params %}{{ param }} {% endfor %}{% endif %}
+
+{% endfor %}
+{% endif %}
+{% endfor %}
