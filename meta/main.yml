@@ -7,7 +7,7 @@ galaxy_info:
   platforms:
   - name: Ubuntu
     versions:
-    - trusty
+    - precise
   categories:
   - networking
   - system
